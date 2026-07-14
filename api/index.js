@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
+import Category from '../server/src/models/Category.js';
 import authRoutes from '../server/src/routes/auth.js';
 import categoryRoutes from '../server/src/routes/categories.js';
 import listingRoutes from '../server/src/routes/listings.js';
@@ -25,6 +26,25 @@ app.use('/api/orders', orderRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.post('/api/seed', async (req, res) => {
+  try {
+    const existing = await Category.countDocuments();
+    if (existing > 0) {
+      return res.json({ message: `Already seeded (${existing} categories)`, count: existing });
+    }
+    const cats = [
+      { name: 'Vintage Coins', slug: 'vintage-coins', description: 'Rare and collectible vintage coins from around the world' },
+      { name: 'Special Serial Taka', slug: 'special-serial-taka', description: 'Bangladeshi Taka banknotes with unique and rare serial numbers' },
+      { name: 'Old Cameras', slug: 'old-cameras', description: 'Vintage and classic cameras for collectors and enthusiasts' },
+      { name: 'Collectibles', slug: 'collectibles', description: 'Various collectible items and memorabilia' },
+    ];
+    await Category.insertMany(cats);
+    res.status(201).json({ message: 'Seeded successfully', categories: cats });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 let cachedDb = null;
