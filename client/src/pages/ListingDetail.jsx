@@ -23,6 +23,7 @@ export default function ListingDetail() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -60,6 +61,18 @@ export default function ListingDetail() {
   const handleBuyNow = () => {
     if (!user) { navigate('/login'); return; }
     navigate(`/checkout/${id}`);
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Delete this listing permanently?')) return;
+    setDeleting(true);
+    try {
+      await listingsApi.delete(id);
+      navigate('/my-listings');
+    } catch {
+      setError('Failed to delete');
+      setDeleting(false);
+    }
   };
 
   const handleReview = async (e) => {
@@ -143,6 +156,7 @@ export default function ListingDetail() {
               {listing.status === 'active' && !isSeller && (
                 <button onClick={handleBuyNow} className="btn btn-primary btn-lg" style={{ width: '100%' }}>Buy Now</button>
               )}
+              {listing.status === 'sold' && <div className="sold-badge-lg">Sold Out</div>}
             </div>
           ) : (
             <div className="listing-detail-bid-section">
@@ -183,7 +197,13 @@ export default function ListingDetail() {
               {listing.status === 'active' && !isSeller && !user && (
                 <Link to="/login" className="btn btn-primary btn-lg" style={{ width: '100%', textAlign: 'center', marginTop: 16 }}>Sign in to Bid</Link>
               )}
-              {isSeller && <p className="listing-detail-note">You are selling this item.</p>}
+              {isSeller && (
+                <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+                  <button className="btn btn-outline btn-sm" onClick={handleDelete} disabled={deleting} style={{ flex: 1 }}>
+                    {deleting ? 'Deleting...' : 'Delete Listing'}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

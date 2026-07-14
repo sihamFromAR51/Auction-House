@@ -16,7 +16,7 @@ export const localAuth = {
     if (users.find((u) => u.email === email || u.phone === phone)) {
       throw { response: { data: { message: 'Email or phone already registered' } } };
     }
-    const user = { _id: Date.now().toString(), name, email, phone, password, role: 'user', avatar: '', createdAt: new Date().toISOString() };
+    const user = { _id: Date.now().toString(), name, email, phone, password, role: 'user', avatar: '', coverPhoto: '', bio: '', location: '', website: '', createdAt: new Date().toISOString() };
     users.push(user);
     set(USERS_KEY, users);
     const { password: _, ...safe } = user;
@@ -74,7 +74,7 @@ function populateListing(listing) {
   const cat = categories.find((c) => c._id === listing.category);
   return {
     ...listing,
-    seller: seller ? { _id: seller._id, name: seller.name, avatar: seller.avatar } : { _id: sellerId, name: 'Unknown' },
+    seller: seller ? { _id: seller._id, name: seller.name, avatar: seller.avatar, bio: seller.bio, location: seller.location } : { _id: sellerId, name: 'Unknown' },
     category: cat || { _id: listing.category, name: listing.category, slug: listing.category },
   };
 }
@@ -117,6 +117,14 @@ export const localListings = {
     set(LISTINGS_KEY, listings);
     return listing;
   },
+  'delete': (id) => {
+    const listings = get(LISTINGS_KEY);
+    const idx = listings.findIndex((l) => l._id === id);
+    if (idx === -1) throw new Error('Listing not found');
+    listings.splice(idx, 1);
+    set(LISTINGS_KEY, listings);
+    return true;
+  },
 };
 
 export const localReviews = {
@@ -130,16 +138,44 @@ export const localReviews = {
   },
 };
 
+function populateOrder(order) {
+  if (!order) return null;
+  const users = get(USERS_KEY);
+  const listing = get(LISTINGS_KEY).find((l) => l._id === order.listing);
+  const seller = users.find((u) => u._id === order.seller);
+  const buyer = users.find((u) => u._id === order.buyer);
+  return {
+    ...order,
+    listing: listing ? { _id: listing._id, title: listing.title, images: listing.images, price: listing.price } : { _id: order.listing, title: 'Listing' },
+    seller: seller ? { _id: seller._id, name: seller.name } : { _id: order.seller, name: 'Unknown' },
+    buyer: buyer ? { _id: buyer._id, name: buyer.name } : { _id: order.buyer, name: 'Unknown' },
+  };
+}
+
 export const localOrders = {
-  getByBuyer: (buyerId) => get(ORDERS_KEY).filter((o) => o.buyer === buyerId),
-  getBySeller: (sellerId) => get(ORDERS_KEY).filter((o) => o.seller === sellerId),
+  getByBuyer: (buyerId) => get(ORDERS_KEY).filter((o) => o.buyer === buyerId).map(populateOrder),
+  getBySeller: (sellerId) => get(ORDERS_KEY).filter((o) => o.seller === sellerId).map(populateOrder),
   create: (data) => {
     const orders = get(ORDERS_KEY);
-    const order = { _id: Date.now().toString(), ...data, status: 'pending', createdAt: new Date().toISOString() };
+    const users = get(USERS_KEY);
+    const listingId = data.listingId || data.listing;
+    const order = {
+      _id: Date.now().toString(),
+      listing: listingId,
+      buyer: data.buyer,
+      seller: data.seller,
+      amount: data.amount,
+      paymentMethod: data.paymentMethod,
+      paymentNumber: data.paymentNumber,
+      transactionId: data.transactionId || '',
+      note: data.note || '',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
     orders.push(order);
     set(ORDERS_KEY, orders);
     const listings = get(LISTINGS_KEY);
-    const lIdx = listings.findIndex((l) => l._id === data.listing);
+    const lIdx = listings.findIndex((l) => l._id === listingId);
     if (lIdx > -1) { listings[lIdx].status = 'sold'; set(LISTINGS_KEY, listings); }
     return order;
   },

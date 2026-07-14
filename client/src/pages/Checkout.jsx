@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { listings as listingsApi, orders as ordersApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -13,6 +13,7 @@ export default function Checkout() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [done, setDone] = useState(false);
   const [form, setForm] = useState({
     paymentMethod: 'bkash',
     paymentNumber: '',
@@ -21,30 +22,26 @@ export default function Checkout() {
   });
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+    if (!user) { navigate('/login'); return; }
     listingsApi.getById(listingId).then((res) => {
       setListing(res.data.listing);
-    }).catch(() => {
-      navigate('/');
-    }).finally(() => {
-      setLoading(false);
-    });
+      if (res.data.listing.status !== 'active') setError('This item is no longer available');
+    }).catch(() => navigate('/')).finally(() => setLoading(false));
   }, [listingId, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError('');
-
     try {
+      const amount = listing.type === 'fixed' ? listing.price : listing.currentBid;
       await ordersApi.create({
         listingId,
+        seller: listing.seller._id,
+        amount,
         ...form,
       });
-      navigate('/my-orders');
+      setDone(true);
     } catch (err) {
       setError(err.response?.data?.message || 'Order failed');
     } finally {
@@ -54,6 +51,33 @@ export default function Checkout() {
 
   if (loading) return <LoadingSpinner />;
   if (!listing) return null;
+  if (listing.status !== 'active' && !done) {
+    return (
+      <div className="container checkout">
+        <div className="empty-state">
+          <h3>Item Not Available</h3>
+          <p>This item has already been sold.</p>
+          <Link to="/" className="btn btn-primary" style={{ marginTop: 16, display: 'inline-flex' }}>Browse Items</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (done) {
+    return (
+      <div className="container checkout">
+        <div className="checkout-success card" style={{ maxWidth: 500, margin: '60px auto', textAlign: 'center', padding: 48 }}>
+          <div style={{ fontSize: '3rem', marginBottom: 16 }}>🎉</div>
+          <h2>Purchase Successful!</h2>
+          <p style={{ color: 'var(--color-text-light)', margin: '16px 0 24px' }}>Your order has been placed. The seller will contact you for delivery.</p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <Link to="/my-orders" className="btn btn-primary">View Orders</Link>
+            <Link to="/" className="btn btn-outline">Continue Browsing</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const amount = listing.type === 'fixed' ? listing.price : listing.currentBid;
 
@@ -91,67 +115,28 @@ export default function Checkout() {
               <label className="form-label">Payment Method</label>
               <div className="payment-methods">
                 <label className={`payment-method ${form.paymentMethod === 'bkash' ? 'active' : ''}`}>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="bkash"
-                    checked={form.paymentMethod === 'bkash'}
-                    onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
-                  />
+                  <input type="radio" name="paymentMethod" value="bkash" checked={form.paymentMethod === 'bkash'} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })} />
                   <span className="payment-method-name">bKash</span>
                 </label>
                 <label className={`payment-method ${form.paymentMethod === 'nagad' ? 'active' : ''}`}>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="nagad"
-                    checked={form.paymentMethod === 'nagad'}
-                    onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
-                  />
+                  <input type="radio" name="paymentMethod" value="nagad" checked={form.paymentMethod === 'nagad'} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })} />
                   <span className="payment-method-name">Nagad</span>
                 </label>
               </div>
             </div>
-
             <div className="form-group">
               <label className="form-label">{form.paymentMethod === 'bkash' ? 'bKash' : 'Nagad'} Number</label>
-              <input
-                type="tel"
-                className="form-input"
-                placeholder="01XXXXXXXXX"
-                value={form.paymentNumber}
-                onChange={(e) => setForm({ ...form, paymentNumber: e.target.value })}
-                required
-              />
+              <input type="tel" className="form-input" placeholder="01XXXXXXXXX" value={form.paymentNumber} onChange={(e) => setForm({ ...form, paymentNumber: e.target.value })} required />
             </div>
-
             <div className="form-group">
               <label className="form-label">Transaction ID (optional)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Enter transaction ID if paid"
-                value={form.transactionId}
-                onChange={(e) => setForm({ ...form, transactionId: e.target.value })}
-              />
+              <input type="text" className="form-input" placeholder="Enter transaction ID if paid" value={form.transactionId} onChange={(e) => setForm({ ...form, transactionId: e.target.value })} />
             </div>
-
             <div className="form-group">
               <label className="form-label">Note (optional)</label>
-              <textarea
-                className="form-input"
-                placeholder="Any message for the seller"
-                value={form.note}
-                onChange={(e) => setForm({ ...form, note: e.target.value })}
-              />
+              <textarea className="form-input" placeholder="Any message for the seller" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
             </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary btn-lg"
-              style={{ width: '100%' }}
-              disabled={submitting}
-            >
+            <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={submitting}>
               {submitting ? 'Processing...' : `Pay BDT ${amount?.toLocaleString()}`}
             </button>
           </form>

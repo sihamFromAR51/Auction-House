@@ -8,3 +8,26 @@
   align-items: center;
   margin-bottom: 32px;
 }
+
+.my-listings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.my-listing-item {
+  position: relative;
+}
+
+.my-listing-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--color-bg-alt);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  border: 1px solid var(--color-border-light);
+  border-top: none;
+}

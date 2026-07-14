@@ -8,14 +8,28 @@ import './MyListings.css';
 export default function MyListings() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(null);
 
-  useEffect(() => {
+  const load = () => {
     listingsApi.getMy().then((res) => {
       setListings(res.data.listings);
-    }).catch(() => {}).finally(() => {
-      setLoading(false);
-    });
-  }, []);
+    }).catch(() => {}).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this listing?')) return;
+    setDeleting(id);
+    try {
+      await listingsApi.delete(id);
+      setListings(listings.filter((l) => l._id !== id));
+    } catch (err) {
+      alert('Failed to delete listing');
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   if (loading) return <LoadingSpinner />;
 
@@ -35,9 +49,26 @@ export default function MyListings() {
           </Link>
         </div>
       ) : (
-        <div className="grid-3">
+        <div className="my-listings-grid">
           {listings.map((listing) => (
-            <ListingCard key={listing._id} listing={listing} />
+            <div key={listing._id} className="my-listing-item">
+              <ListingCard listing={listing} />
+              <div className="my-listing-actions">
+                <span className={`badge ${listing.status === 'active' ? 'badge-active' : 'badge-sold'}`}>
+                  {listing.status}
+                </span>
+                {listing.status === 'active' && (
+                  <button
+                    className="btn btn-outline btn-sm"
+                    style={{ color: 'var(--color-error)', borderColor: 'rgba(220,38,38,0.3)' }}
+                    onClick={() => handleDelete(listing._id)}
+                    disabled={deleting === listing._id}
+                  >
+                    {deleting === listing._id ? 'Deleting...' : 'Delete'}
+                  </button>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       )}

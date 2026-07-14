@@ -193,6 +193,18 @@
 
 .listing-detail-note { margin-top: 16px; text-align: center; color: var(--color-text-muted); font-style: italic; }
 
+.sold-badge-lg {
+  display: inline-block;
+  padding: 8px 24px;
+  background: #DC2626;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+}
+
 .review-form {
   margin-top: 20px;
   padding: 20px;
