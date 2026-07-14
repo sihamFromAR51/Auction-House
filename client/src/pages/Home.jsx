@@ -4,6 +4,7 @@ import HeroBanner from '../components/HeroBanner';
 import ListingCard from '../components/ListingCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { listings as listingsApi, categories as categoriesApi } from '../services/api';
+import { FALLBACK_CATEGORIES } from '../categories';
 import './Home.css';
 
 export default function Home() {
@@ -21,7 +22,7 @@ export default function Home() {
         setListings(listingsRes.data.listings);
         setCategories(categoriesRes.data.categories);
       } catch (err) {
-        console.error('Failed to load data', err);
+        setCategories(FALLBACK_CATEGORIES);
       } finally {
         setLoading(false);
       }

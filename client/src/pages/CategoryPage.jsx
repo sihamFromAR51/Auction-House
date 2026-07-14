@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { listings as listingsApi, categories as categoriesApi } from '../services/api';
+import { FALLBACK_CATEGORIES } from '../categories';
 import ListingCard from '../components/ListingCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import './CategoryPage.css';
@@ -18,15 +19,17 @@ export default function CategoryPage() {
       try {
         const catRes = await categoriesApi.getBySlug(slug);
         setCategory(catRes.data.category);
+        const catId = catRes.data.category._id;
 
         const listRes = await listingsApi.getAll({
-          category: catRes.data.category._id,
+          category: catId,
           sort,
           limit: 50,
         });
         setListings(listRes.data.listings);
       } catch (err) {
-        console.error(err);
+        const fallback = FALLBACK_CATEGORIES.find((c) => c.slug === slug);
+        if (fallback) setCategory(fallback);
       } finally {
         setLoading(false);
       }

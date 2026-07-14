@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listings as listingsApi, categories as categoriesApi } from '../services/api';
+import { FALLBACK_CATEGORIES } from '../categories';
 import './CreateListing.css';
 
 export default function CreateListing() {
@@ -21,7 +22,9 @@ export default function CreateListing() {
   });
 
   useEffect(() => {
-    categoriesApi.getAll().then((res) => setCategories(res.data.categories)).catch(() => {});
+    categoriesApi.getAll()
+      .then((res) => setCategories(res.data.categories))
+      .catch(() => setCategories(FALLBACK_CATEGORIES));
   }, []);
 
   const handleChange = (e) => {
