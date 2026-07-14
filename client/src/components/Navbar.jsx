@@ -31,25 +31,24 @@ export default function Navbar() {
         <div className={`navbar-menu ${menuOpen ? 'open' : ''}`}>
           <Link to="/" className="navbar-link" onClick={() => setMenuOpen(false)}>Home</Link>
           <Link to="/category/vintage-coins" className="navbar-link" onClick={() => setMenuOpen(false)}>Coins</Link>
-          <Link to="/category/special-serial-taka" className="navbar-link" onClick={() => setMenuOpen(false)}>Special Taka</Link>
+          <Link to="/category/special-serial-taka" className="navbar-link" onClick={() => setMenuOpen(false)}>Taka</Link>
           <Link to="/category/old-cameras" className="navbar-link" onClick={() => setMenuOpen(false)}>Cameras</Link>
 
+          <Link to="/listings/new" className="btn btn-primary btn-sm" onClick={() => setMenuOpen(false)}>
+            + Sell Item
+          </Link>
+
           {user ? (
-            <>
-              <Link to="/listings/new" className="btn btn-primary btn-sm" onClick={() => setMenuOpen(false)}>
-                + Create Listing
+            <div className="navbar-user">
+              <Link to="/dashboard" className="navbar-link" onClick={() => setMenuOpen(false)}>
+                {user.name}
               </Link>
-              <div className="navbar-user">
-                <Link to="/dashboard" className="navbar-link" onClick={() => setMenuOpen(false)}>
-                  {user.name}
-                </Link>
-                <button onClick={handleLogout} className="btn btn-ghost btn-sm">Logout</button>
-              </div>
-            </>
+              <button onClick={handleLogout} className="btn btn-ghost btn-sm">Logout</button>
+            </div>
           ) : (
             <div className="navbar-user">
               <Link to="/login" className="btn btn-ghost btn-sm" onClick={() => setMenuOpen(false)}>Login</Link>
-              <Link to="/register" className="btn btn-primary btn-sm" onClick={() => setMenuOpen(false)}>Register</Link>
+              <Link to="/register" className="btn btn-secondary btn-sm" onClick={() => setMenuOpen(false)}>Register</Link>
             </div>
           )}
         </div>

@@ -11,6 +11,7 @@ import CategoryPage from './pages/CategoryPage';
 import Checkout from './pages/Checkout';
 import MyListings from './pages/MyListings';
 import MyOrders from './pages/MyOrders';
+import SellerProfile from './pages/SellerProfile';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/checkout/:listingId" element={<Checkout />} />
           <Route path="/my-listings" element={<MyListings />} />
           <Route path="/my-orders" element={<MyOrders />} />
+          <Route path="/seller/:id" element={<SellerProfile />} />
         </Routes>
       </main>
       <Footer />
