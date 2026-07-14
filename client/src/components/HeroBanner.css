@@ -1,0 +1,104 @@
+.hero {
+  position: relative;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, var(--color-primary) 0%, #0F1A2E 60%, #162033 100%);
+  z-index: 0;
+}
+
+.hero-pattern {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A84C' fill-opacity='1'%3E%3Cpath d='M36 34v-8H24v8h12zm2 2H22V18h16v18zM30 12l-6 6h12l-6-6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.hero-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 50%, rgba(201, 168, 76, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 80%, rgba(201, 168, 76, 0.04) 0%, transparent 50%);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 6px 18px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-accent);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 999px;
+  margin-bottom: 28px;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  color: #fff;
+  margin-bottom: 0;
+  line-height: 1.12;
+  font-weight: 600;
+}
+
+.hero-accent {
+  color: var(--color-accent);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.hero-divider {
+  width: 60px;
+  height: 1.5px;
+  background: var(--color-accent);
+  margin: 28px auto;
+  opacity: 0.5;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 36px;
+  line-height: 1.7;
+  max-width: 580px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: 420px;
+  }
+  .hero-title {
+    font-size: 2.25rem;
+  }
+  .hero-content {
+    padding: 60px 16px;
+  }
+}

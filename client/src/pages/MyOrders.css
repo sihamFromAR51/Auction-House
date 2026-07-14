@@ -1,0 +1,130 @@
+.my-orders {
+  padding: 40px 24px;
+}
+
+.my-orders > h2 {
+  margin-bottom: 24px;
+}
+
+.orders-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 32px;
+  width: fit-content;
+}
+
+.orders-tab {
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+
+.orders-tab.active {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-card {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+.order-card-image {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--color-bg-alt);
+}
+
+.order-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.order-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  background: var(--color-border-light);
+}
+
+.order-card-placeholder svg {
+  opacity: 0.4;
+}
+
+.order-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.order-card-info h4 {
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-card-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.order-card-seller {
+  color: var(--color-text-light);
+}
+
+.order-card-amount {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.order-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  flex-wrap: wrap;
+}
+
+.order-card-payment {
+  text-transform: capitalize;
+}
+
+.order-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+  .order-card {
+    flex-direction: column;
+  }
+  .order-card-image {
+    width: 100%;
+    height: 180px;
+  }
+}

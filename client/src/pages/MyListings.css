@@ -1,0 +1,10 @@
+.my-listings {
+  padding: 40px 24px;
+}
+
+.my-listings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}

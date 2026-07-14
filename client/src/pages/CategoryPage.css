@@ -1,0 +1,21 @@
+.category-page {
+  padding: 40px 24px;
+}
+
+.category-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.category-page-header h2 {
+  margin-bottom: 4px;
+}
+
+.category-page-header p {
+  color: var(--color-text-light);
+  font-size: 0.95rem;
+}
