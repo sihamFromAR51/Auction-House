@@ -115,7 +115,7 @@ export const localListings = {
     listing.bids.push({ bidder: bidderId, amount, createdAt: new Date().toISOString() });
     listings[idx] = listing;
     set(LISTINGS_KEY, listings);
-    return listing;
+    return populateListing(listing);
   },
   'delete': (id) => {
     const listings = get(LISTINGS_KEY);

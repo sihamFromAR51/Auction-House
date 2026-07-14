@@ -62,7 +62,7 @@ export default function Navbar() {
 
           {user ? (
             <div className="navbar-user">
-              <Link to="/dashboard" className="navbar-link" onClick={() => setMenuOpen(false)}>
+              <Link to={`/seller/${user._id}`} className="navbar-link" onClick={() => setMenuOpen(false)}>
                 {user.name}
               </Link>
               <button onClick={handleLogout} className="btn btn-ghost btn-sm">Logout</button>

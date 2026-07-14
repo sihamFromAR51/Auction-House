@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './HeroBanner.css';
 
 export default function HeroBanner() {
+  const { user } = useAuth();
+
   return (
     <section className="hero">
       <div className="hero-bg" />
@@ -17,7 +20,9 @@ export default function HeroBanner() {
           From vintage coins and rare banknotes to classic cameras — AuctionHouse connects passionate collectors with extraordinary pieces.
         </p>
         <div className="hero-actions">
-          <Link to="/register" className="btn btn-primary btn-lg">Start Bidding</Link>
+          <Link to={user ? '/category/vintage-coins' : '/register'} className="btn btn-primary btn-lg">
+            Start Bidding
+          </Link>
           <Link to="/category/vintage-coins" className="btn btn-outline btn-lg" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}>
             Explore Collections
           </Link>
