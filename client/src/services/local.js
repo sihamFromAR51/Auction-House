@@ -10,12 +10,18 @@ function set(key, data) {
   localStorage.setItem(key, JSON.stringify(data));
 }
 
+function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function validPhone(p) { return /^[\d\+\-\(\)\s]{7,20}$/.test(p); }
+
 export const localAuth = {
   register: ({ name, email, phone, password }) => {
+    if (!name || !name.trim()) throw { response: { data: { message: 'Name is required' } } };
+    if (!email || !validEmail(email)) throw { response: { data: { message: 'Valid email is required' } } };
+    if (!phone || !validPhone(phone)) throw { response: { data: { message: 'Valid phone is required' } } };
+    if (!password || password.length < 6) throw { response: { data: { message: 'Password must be at least 6 characters' } } };
     const users = get(USERS_KEY);
-    if (users.find((u) => u.email === email || u.phone === phone)) {
-      throw { response: { data: { message: 'Email or phone already registered' } } };
-    }
+    if (users.find((u) => u.email === email)) throw { response: { data: { message: 'Email already registered' } } };
+    if (users.find((u) => u.phone === phone)) throw { response: { data: { message: 'Phone already registered' } } };
     const user = { _id: Date.now().toString(), name, email, phone, password, role: 'user', avatar: '', coverPhoto: '', bio: '', location: '', website: '', createdAt: new Date().toISOString() };
     users.push(user);
     set(USERS_KEY, users);
@@ -24,6 +30,8 @@ export const localAuth = {
     return { data: { token, user: safe } };
   },
   login: ({ email, phone, password }) => {
+    if (!password) throw { response: { data: { message: 'Password is required' } } };
+    if (!email && !phone) throw { response: { data: { message: 'Email or phone is required' } } };
     const users = get(USERS_KEY);
     const user = users.find((u) => (email ? u.email === email : u.phone === phone));
     if (!user || user.password !== password) {
@@ -85,6 +93,10 @@ export const localListings = {
   create: (data) => {
     const listings = get(LISTINGS_KEY);
     const sellerId = typeof data.seller === 'object' ? data.seller?._id : data.seller;
+    if (!data.title || !data.title.trim()) throw new Error('Title is required');
+    if (!data.category) throw new Error('Category is required');
+    if (data.type === 'fixed' && (!data.price || data.price <= 0)) throw new Error('Valid price is required');
+    if (data.type === 'auction' && (!data.startingBid || data.startingBid <= 0)) throw new Error('Valid starting bid is required');
     const listing = {
       _id: Date.now().toString(),
       ...data,
@@ -98,6 +110,22 @@ export const localListings = {
     set(LISTINGS_KEY, listings);
     return populateListing(listing);
   },
+  update: (id, data) => {
+    const listings = get(LISTINGS_KEY);
+    const idx = listings.findIndex((l) => l._id === id);
+    if (idx === -1) throw new Error('Listing not found');
+    const sellerId = typeof data.seller === 'object' ? data.seller?._id : data.seller;
+    const stored = listings[idx];
+    if (stored.status !== 'active') throw new Error('Cannot edit a sold item');
+    const allowed = ['title', 'category', 'type', 'description', 'price', 'startingBid', 'reservePrice', 'endDate', 'images'];
+    const update = {};
+    for (const key of allowed) {
+      if (data[key] !== undefined) update[key] = data[key];
+    }
+    listings[idx] = { ...stored, ...update, seller: stored.seller, _id: stored._id, createdAt: stored.createdAt, bids: stored.bids, currentBid: stored.currentBid, status: stored.status };
+    set(LISTINGS_KEY, listings);
+    return populateListing(listings[idx]);
+  },
   getBySeller: (sellerId) => get(LISTINGS_KEY).filter((l) => {
     const sid = typeof l.seller === 'object' ? l.seller?._id : l.seller;
     return sid === sellerId;
@@ -109,8 +137,11 @@ export const localListings = {
     const listing = listings[idx];
     if (listing.type !== 'auction') throw new Error('Not an auction');
     if (listing.status !== 'active') throw new Error('Auction ended');
-    const minBid = listing.currentBid + (listing.bidIncrement || Math.max(10, Math.floor(listing.startingBid * 0.05)));
-    if (amount < minBid) throw new Error(`Bid must be at least ${minBid}`);
+    if (listing.seller === bidderId) throw new Error('Cannot bid on your own listing');
+    if (!amount || amount <= 0) throw new Error('Invalid bid amount');
+    const bidIncrement = listing.bidIncrement || Math.max(10, Math.floor((listing.startingBid || 100) * 0.05));
+    const minBid = listing.currentBid + bidIncrement;
+    if (amount < minBid) throw new Error(`Minimum bid is BDT ${minBid.toLocaleString()}`);
     listing.currentBid = amount;
     listing.bids.push({ bidder: bidderId, amount, createdAt: new Date().toISOString() });
     listings[idx] = listing;
@@ -130,7 +161,12 @@ export const localListings = {
 export const localReviews = {
   getBySeller: (sellerId) => get(REVIEWS_KEY).filter((r) => r.sellerId === sellerId),
   create: ({ sellerId, buyerId, buyerName, listingId, rating, comment }) => {
+    if (buyerId === sellerId) throw new Error('Cannot review yourself');
+    if (!rating || rating < 1 || rating > 5) throw new Error('Rating must be between 1 and 5');
     const reviews = get(REVIEWS_KEY);
+    if (reviews.find((r) => r.buyerId === buyerId && r.listingId === listingId)) {
+      throw new Error('Already reviewed this listing');
+    }
     const review = { _id: Date.now().toString(), sellerId, buyerId, buyerName, listingId, rating, comment, createdAt: new Date().toISOString() };
     reviews.push(review);
     set(REVIEWS_KEY, reviews);
@@ -156,15 +192,24 @@ export const localOrders = {
   getByBuyer: (buyerId) => get(ORDERS_KEY).filter((o) => o.buyer === buyerId).map(populateOrder),
   getBySeller: (sellerId) => get(ORDERS_KEY).filter((o) => o.seller === sellerId).map(populateOrder),
   create: (data) => {
-    const orders = get(ORDERS_KEY);
     const users = get(USERS_KEY);
+    const orders = get(ORDERS_KEY);
     const listingId = data.listingId || data.listing;
+    const buyerId = data.buyer;
+    const sellerId = data.seller;
+    if (buyerId === sellerId) throw new Error('Cannot buy your own item');
+    const listings = get(LISTINGS_KEY);
+    const lIdx = listings.findIndex((l) => l._id === listingId);
+    if (lIdx === -1) throw new Error('Listing not found');
+    if (listings[lIdx].status !== 'active') throw new Error('This item is no longer available');
+    if (!data.paymentMethod) throw new Error('Payment method is required');
+    if (!data.paymentNumber) throw new Error('Payment number is required');
     const order = {
       _id: Date.now().toString(),
       listing: listingId,
-      buyer: data.buyer,
-      seller: data.seller,
-      amount: data.amount,
+      buyer: buyerId,
+      seller: sellerId,
+      amount: data.amount || 0,
       paymentMethod: data.paymentMethod,
       paymentNumber: data.paymentNumber,
       transactionId: data.transactionId || '',
@@ -174,9 +219,8 @@ export const localOrders = {
     };
     orders.push(order);
     set(ORDERS_KEY, orders);
-    const listings = get(LISTINGS_KEY);
-    const lIdx = listings.findIndex((l) => l._id === listingId);
-    if (lIdx > -1) { listings[lIdx].status = 'sold'; set(LISTINGS_KEY, listings); }
+    listings[lIdx].status = 'sold';
+    set(LISTINGS_KEY, listings);
     return order;
   },
   updateStatus: (id, status) => {

@@ -58,14 +58,17 @@ export default function MyListings() {
                   {listing.status}
                 </span>
                 {listing.status === 'active' && (
-                  <button
-                    className="btn btn-outline btn-sm"
-                    style={{ color: 'var(--color-error)', borderColor: 'rgba(220,38,38,0.3)' }}
-                    onClick={() => handleDelete(listing._id)}
-                    disabled={deleting === listing._id}
-                  >
-                    {deleting === listing._id ? 'Deleting...' : 'Delete'}
-                  </button>
+                  <>
+                    <Link to={`/listings/${listing._id}/edit`} className="btn btn-secondary btn-sm">Edit</Link>
+                    <button
+                      className="btn btn-outline btn-sm"
+                      style={{ color: 'var(--color-error)', borderColor: 'rgba(220,38,38,0.3)' }}
+                      onClick={() => handleDelete(listing._id)}
+                      disabled={deleting === listing._id}
+                    >
+                      {deleting === listing._id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </>
                 )}
               </div>
             </div>

@@ -199,8 +199,11 @@ export default function ListingDetail() {
               )}
               {isSeller && (
                 <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+                  <Link to={`/listings/${listing._id}/edit`} className="btn btn-secondary btn-sm" style={{ flex: 1, textAlign: 'center' }}>
+                    Edit Listing
+                  </Link>
                   <button className="btn btn-outline btn-sm" onClick={handleDelete} disabled={deleting} style={{ flex: 1 }}>
-                    {deleting ? 'Deleting...' : 'Delete Listing'}
+                    {deleting ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               )}

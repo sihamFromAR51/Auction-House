@@ -102,6 +102,14 @@ export const listings = {
       return { data: { listing } };
     });
   },
+  update: async (id, data) => {
+    const uid = getUserId();
+    if (!uid) throw new Error('Login required');
+    return tryApi(() => api.put(`/listings/${id}`, data), () => {
+      const listing = localListings.update(id, { ...data, seller: uid });
+      return { data: { listing } };
+    });
+  },
   'delete': async (id) => tryApi(() => api.delete(`/listings/${id}`), () => {
     localListings.delete(id);
     return { data: { success: true } };

@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateListing from './pages/CreateListing';
+import EditListing from './pages/EditListing';
 import ListingDetail from './pages/ListingDetail';
 import CategoryPage from './pages/CategoryPage';
 import Checkout from './pages/Checkout';
@@ -24,6 +25,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/listings/new" element={<CreateListing />} />
+          <Route path="/listings/:id/edit" element={<EditListing />} />
           <Route path="/listings/:id" element={<ListingDetail />} />
           <Route path="/category/:slug" element={<CategoryPage />} />
           <Route path="/checkout/:listingId" element={<Checkout />} />
