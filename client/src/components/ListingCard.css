@@ -24,10 +24,12 @@
   transform: scale(1.05);
 }
 
-.listing-card-image .badge {
+.listing-card-badges {
   position: absolute;
   top: 12px;
   left: 12px;
+  display: flex;
+  gap: 4px;
 }
 
 .listing-card-placeholder {

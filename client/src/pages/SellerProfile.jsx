@@ -48,8 +48,8 @@ export default function SellerProfile() {
         <div className="seller-info">
           <div className="seller-name-row">
             <h2>{profile.name}</h2>
-            {isVerified && <span className="seller-badge verified" title="Verified Seller">\u2713 Verified</span>}
-            {isTopSeller && <span className="seller-badge top-seller" title="Top Seller">\u2B50 Top Seller</span>}
+            {isVerified && <span className="seller-badge verified" title="Verified Seller">{'\u2713'} Verified</span>}
+            {isTopSeller && <span className="seller-badge top-seller" title="Top Seller">{'\u2B50'} Top Seller</span>}
           </div>
           <div className="seller-meta">
             <span className="seller-rating">

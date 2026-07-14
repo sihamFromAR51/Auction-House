@@ -41,6 +41,7 @@ export const localAuth = {
     return { data: { user: safe } };
   },
   getUser: (id) => {
+    if (!id) return null;
     const users = get(USERS_KEY);
     const user = users.find((u) => u._id === id);
     if (!user) return null;
@@ -59,24 +60,48 @@ export const localAuth = {
   },
 };
 
+function populateListing(listing) {
+  if (!listing) return null;
+  const users = get(USERS_KEY);
+  const categories = [
+    { _id: 'vintage-coins', name: 'Vintage Coins', slug: 'vintage-coins', description: 'Rare and collectible vintage coins from around the world' },
+    { _id: 'special-serial-taka', name: 'Special Serial Taka', slug: 'special-serial-taka', description: 'Bangladeshi Taka banknotes with unique and rare serial numbers' },
+    { _id: 'old-cameras', name: 'Old Cameras', slug: 'old-cameras', description: 'Vintage and classic cameras for collectors and enthusiasts' },
+    { _id: 'collectibles', name: 'Collectibles', slug: 'collectibles', description: 'Various collectible items and memorabilia' },
+  ];
+  const sellerId = typeof listing.seller === 'object' ? listing.seller?._id : listing.seller;
+  const seller = users.find((u) => u._id === sellerId);
+  const cat = categories.find((c) => c._id === listing.category);
+  return {
+    ...listing,
+    seller: seller ? { _id: seller._id, name: seller.name, avatar: seller.avatar } : { _id: sellerId, name: 'Unknown' },
+    category: cat || { _id: listing.category, name: listing.category, slug: listing.category },
+  };
+}
+
 export const localListings = {
-  getAll: () => get(LISTINGS_KEY),
-  getById: (id) => get(LISTINGS_KEY).find((l) => l._id === id) || null,
+  getAll: () => get(LISTINGS_KEY).map(populateListing),
+  getById: (id) => populateListing(get(LISTINGS_KEY).find((l) => l._id === id)) || null,
   create: (data) => {
     const listings = get(LISTINGS_KEY);
+    const sellerId = typeof data.seller === 'object' ? data.seller?._id : data.seller;
     const listing = {
       _id: Date.now().toString(),
       ...data,
+      seller: sellerId,
       status: 'active',
       createdAt: new Date().toISOString(),
-      currentBid: data.type === 'auction' ? data.startingBid : 0,
+      currentBid: data.type === 'auction' ? (data.startingBid || 0) : 0,
       bids: [],
     };
     listings.unshift(listing);
     set(LISTINGS_KEY, listings);
-    return listing;
+    return populateListing(listing);
   },
-  getBySeller: (sellerId) => get(LISTINGS_KEY).filter((l) => l.seller === sellerId),
+  getBySeller: (sellerId) => get(LISTINGS_KEY).filter((l) => {
+    const sid = typeof l.seller === 'object' ? l.seller?._id : l.seller;
+    return sid === sellerId;
+  }).map(populateListing),
   placeBid: (id, bidderId, amount) => {
     const listings = get(LISTINGS_KEY);
     const idx = listings.findIndex((l) => l._id === id);

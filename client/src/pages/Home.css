@@ -86,6 +86,11 @@
   padding: 0 24px 60px;
 }
 
+.suggestions-section,
+.recent-section {
+  padding: 0 24px 48px;
+}
+
 .sell-section {
   padding: 40px 24px 80px;
 }

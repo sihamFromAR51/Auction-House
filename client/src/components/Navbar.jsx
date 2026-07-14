@@ -7,6 +7,15 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (search.trim()) {
+      navigate(`/category/collectibles?search=${encodeURIComponent(search.trim())}`);
+      setSearch('');
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -19,6 +28,19 @@ export default function Navbar() {
         <Link to="/" className="navbar-brand">
           <img src="/logo.svg" alt="AuctionHouse" className="navbar-logo" />
         </Link>
+
+        <form className="navbar-search" onSubmit={handleSearch}>
+          <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search items..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="search-input"
+          />
+        </form>
 
         <button
           className={`navbar-toggle ${menuOpen ? 'open' : ''}`}

@@ -73,7 +73,7 @@ export const categories = {
     }
   },
   getBySlug: async (slug) => {
-    const cat = FALLBACK_CATEGORIES.find((c) => c.slug === slug);
+    const cat = FALLBACK_CATEGORIES.find((c) => c.slug === slug || c._id === slug);
     try {
       return await api.get(`/categories/${slug}`);
     } catch {
@@ -88,14 +88,15 @@ export const listings = {
       return await api.get('/listings', { params });
     } catch {
       let items = localListings.getAll();
-      if (params?.category) items = items.filter((l) => l.category === params.category);
+      if (params?.category) items = items.filter((l) => l.category?.slug === params.category || l.category?._id === params.category);
       if (params?.type) items = items.filter((l) => l.type === params.type);
       if (params?.search) {
         const q = params.search.toLowerCase();
         items = items.filter((l) => l.title?.toLowerCase().includes(q) || l.description?.toLowerCase().includes(q));
       }
+      if (params?.seller) items = items.filter((l) => l.seller?._id === params.seller || l.seller === params.seller);
       items = items.filter((l) => l.status === 'active');
-      const sortMap = { oldest: 'createdAt', 'price-asc': 'price', 'price-desc': '-price', 'ending-soon': 'endDate' };
+      const sortMap = { newest: '-createdAt', oldest: 'createdAt', 'price-asc': 'price', 'price-desc': '-price', 'ending-soon': 'endDate' };
       const sortField = sortMap[params?.sort] || '-createdAt';
       if (sortField.startsWith('-')) items.sort((a, b) => new Date(b[sortField.slice(1)]) - new Date(a[sortField.slice(1)]));
       else items.sort((a, b) => new Date(a[sortField]) - new Date(b[sortField]));

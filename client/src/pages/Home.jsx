@@ -6,29 +6,33 @@ import ListingCard from '../components/ListingCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { listings as listingsApi, categories as categoriesApi } from '../services/api';
 import { FALLBACK_CATEGORIES } from '../categories';
+import { getRecentViews, getViewedCategoryIds } from '../config';
 import './Home.css';
 
 export default function Home() {
   const { user } = useAuth();
   const [mode, setMode] = useState('buy');
   const [listings, setListings] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const recentViews = getRecentViews();
 
   useEffect(() => {
     const fetch = async () => {
+      setCategories(FALLBACK_CATEGORIES);
       try {
-        const [listingsRes, categoriesRes] = await Promise.all([
-          listingsApi.getAll({ limit: 12 }),
-          categoriesApi.getAll(),
-        ]);
+        const listingsRes = await listingsApi.getAll({ limit: 12, sort: 'newest' });
         setListings(listingsRes.data.listings || []);
-        setCategories(categoriesRes.data.categories || FALLBACK_CATEGORIES);
-      } catch {
-        setCategories(FALLBACK_CATEGORIES);
-      } finally {
-        setLoading(false);
-      }
+      } catch {}
+      try {
+        const catIds = getViewedCategoryIds();
+        if (catIds.length > 0) {
+          const sugRes = await listingsApi.getAll({ category: catIds[0], limit: 4, sort: 'newest' });
+          setSuggestions((sugRes.data.listings || []).filter((l) => !recentViews.find((rv) => rv._id === l._id) && !listings.find((ls) => ls._id === l._id)));
+        }
+      } catch {}
+      setLoading(false);
     };
     fetch();
   }, []);
@@ -64,11 +68,7 @@ export default function Home() {
             <div className="categories-grid">
               {categories.map((cat) => (
                 <Link key={cat._id} to={`/category/${cat.slug}`} className="category-card card">
-                  <span className="category-icon">
-                    {cat.slug === 'vintage-coins' && '🪙'}
-                    {cat.slug === 'special-serial-taka' && '💵'}
-                    {cat.slug === 'old-cameras' && '📷'}
-                  </span>
+                  <span className="category-icon">{cat.icon}</span>
                   <h3>{cat.name}</h3>
                   <p>{cat.description}</p>
                 </Link>
@@ -76,12 +76,39 @@ export default function Home() {
             </div>
           </section>
 
+          {suggestions.length > 0 && (
+            <section className="container suggestions-section">
+              <div className="section-title">
+                <h2>Recommended for You</h2>
+                <p>Based on your browsing history</p>
+              </div>
+              <div className="grid-3">
+                {suggestions.slice(0, 4).map((item) => (
+                  <ListingCard key={item._id} listing={item} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {recentViews.length > 0 && (
+            <section className="container recent-section">
+              <div className="section-title">
+                <h2>Recently Viewed</h2>
+                <p>Pick up where you left off</p>
+              </div>
+              <div className="grid-3">
+                {recentViews.slice(0, 4).map((item) => (
+                  <ListingCard key={item._id} listing={item} />
+                ))}
+              </div>
+            </section>
+          )}
+
           <section className="container listings-section">
             <div className="section-title">
               <h2>Latest Listings</h2>
               <p>Fresh arrivals for collectors and enthusiasts</p>
             </div>
-
             {loading ? (
               <LoadingSpinner />
             ) : listings.length === 0 ? (
@@ -107,36 +134,32 @@ export default function Home() {
             <div className="sell-cta-content">
               <h2>Ready to Sell?</h2>
               <p>List your vintage coins, special serial taka, old cameras, and collectibles for thousands of buyers to see.</p>
-                <div className="sell-features">
-                  <div className="sell-feature">
-                    <span className="sell-feature-icon">💰</span>
-                    <div>
-                      <h4>Set Your Price</h4>
-                      <p>Fixed price or auction — you choose</p>
-                    </div>
-                  </div>
-                  <div className="sell-feature">
-                    <span className="sell-feature-icon">🌍</span>
-                    <div>
-                      <h4>Reach Collectors</h4>
-                      <p>Your items seen by passionate buyers</p>
-                    </div>
-                  </div>
-                  <div className="sell-feature">
-                    <span className="sell-feature-icon">✅</span>
-                    <div>
-                      <h4>Secure Payments</h4>
-                      <p>bKash and Nagad supported</p>
-                    </div>
+              <div className="sell-features">
+                <div className="sell-feature">
+                  <span className="sell-feature-icon">💰</span>
+                  <div>
+                    <h4>Set Your Price</h4>
+                    <p>Fixed price or auction — you choose</p>
                   </div>
                 </div>
-              <Link to="/listings/new" className="btn btn-primary btn-lg">
-                Start Selling
-              </Link>
+                <div className="sell-feature">
+                  <span className="sell-feature-icon">🌍</span>
+                  <div>
+                    <h4>Reach Collectors</h4>
+                    <p>Your items seen by passionate buyers</p>
+                  </div>
+                </div>
+                <div className="sell-feature">
+                  <span className="sell-feature-icon">✅</span>
+                  <div>
+                    <h4>Secure Payments</h4>
+                    <p>bKash and Nagad supported</p>
+                  </div>
+                </div>
+              </div>
+              <Link to="/listings/new" className="btn btn-primary btn-lg">Start Selling</Link>
               {user && (
-                <Link to="/my-listings" className="btn btn-outline btn-lg" style={{ marginLeft: 12 }}>
-                  My Listings
-                </Link>
+                <Link to="/my-listings" className="btn btn-outline btn-lg" style={{ marginLeft: 12 }}>My Listings</Link>
               )}
             </div>
           </div>

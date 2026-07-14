@@ -246,6 +246,72 @@
 .listing-review-rating { color: #F9A825; font-size: 0.85rem; }
 .listing-review-item p { font-size: 0.85rem; color: var(--color-text-light); }
 
+.related-section {
+  margin-top: 60px;
+  padding-top: 40px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.badge-topseller-sm {
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  background: #FFF8E1;
+  color: #F57F17;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.badge-auction {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.listing-card-badges {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  cursor: default;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+
+.lightbox-close:hover {
+  background: rgba(255,255,255,0.3);
+}
+
 @media (max-width: 900px) {
   .listing-detail-grid { grid-template-columns: 1fr; gap: 24px; }
   .listing-detail-main-image { height: 320px; }
