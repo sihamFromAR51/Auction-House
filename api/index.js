@@ -28,8 +28,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.post('/api/seed', async (req, res) => {
+app.all('/api/seed', async (req, res) => {
   try {
+    await connectDB();
     const existing = await Category.countDocuments();
     if (existing > 0) {
       return res.json({ message: `Already seeded (${existing} categories)`, count: existing });
