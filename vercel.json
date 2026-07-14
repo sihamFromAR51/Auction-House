@@ -1,6 +1,6 @@
 {
   "installCommand": "npm install && npm install --prefix client",
-  "buildCommand": "cd client && npm run build",
+  "buildCommand": "cd client && npx vite build",
   "outputDirectory": "client/dist",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
